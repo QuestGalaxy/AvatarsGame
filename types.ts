@@ -34,6 +34,7 @@ export interface CellData {
   coord: HexCoord;
   type: CellType;
   owner: Ownership;
+  powerupId?: string;
 }
 
 export interface Character {
@@ -44,6 +45,15 @@ export interface Character {
   trailColor: string;
   description: string;
   title: string;
+}
+
+export type PowerupKind = 'positive' | 'negative';
+
+export interface PowerupDefinition {
+  id: string;
+  name: string;
+  kind: PowerupKind;
+  description: string;
 }
 
 export interface LevelDefinition {

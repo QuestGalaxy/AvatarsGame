@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,7 +7,8 @@ import { useGameStore, LEVELS } from '../store';
 import HexCell from './HexCell';
 import Dragon from './Dragon';
 import Confetti from './Confetti';
-import { GameState, CellData } from '../types';
+import PowerupEffect from './PowerupEffect';
+import { GameState, CellData, PowerupKind } from '../types';
 import { hexToWorld } from '../utils/hexMath';
 import { audio } from '../utils/audio';
 
@@ -367,12 +368,30 @@ const IslandBase: React.FC = () => {
 };
 
 const GameScene: React.FC = () => {
-  const { grid, initLevel, gameState, atmosphere } = useGameStore();
+  const { grid, initLevel, gameState, atmosphere, lastPowerup } = useGameStore();
+  const [effects, setEffects] = useState<{ id: number; kind: PowerupKind; powerupId: string; position: [number, number, number] }[]>([]);
 
   useEffect(() => { initLevel(); }, [initLevel]);
   useEffect(() => { audio.setAmbient(atmosphere); }, [atmosphere]);
 
   const gridArray = useMemo(() => Object.values(grid) as CellData[], [grid]);
+  const lastPowerupEventId = lastPowerup?.eventId;
+
+  useEffect(() => {
+    if (!lastPowerup || lastPowerupEventId === undefined) return;
+    const [x, , z] = hexToWorld(lastPowerup.coord.q, lastPowerup.coord.r);
+    const effect = {
+      id: lastPowerupEventId,
+      kind: lastPowerup.kind,
+      powerupId: lastPowerup.id,
+      position: [x, 0.1, z] as [number, number, number]
+    };
+    setEffects(prev => [...prev, effect]);
+    const timeout = setTimeout(() => {
+      setEffects(prev => prev.filter(e => e.id !== effect.id));
+    }, 1200);
+    return () => clearTimeout(timeout);
+  }, [lastPowerup, lastPowerupEventId]);
 
   return (
     <Canvas 
@@ -406,9 +425,13 @@ const GameScene: React.FC = () => {
               r={cell.coord.r} 
               type={cell.type} 
               owner={cell.owner}
+              powerupId={cell.powerupId}
             />
           ))}
           <Dragon />
+          {effects.map(effect => (
+            <PowerupEffect key={effect.id} position={effect.position} kind={effect.kind} powerupId={effect.powerupId} />
+          ))}
         </group>
       </group>
       {gameState === GameState.WON && <Confetti />}

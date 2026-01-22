@@ -1,8 +1,8 @@
 
 import React, { useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGameStore, LEVELS } from '../store';
-import { CellType, Ownership, GameState, HexCoord, HEX_DIRECTIONS } from '../types';
+import { useGameStore, POWERUP_MAP } from '../store';
+import { CellType, Ownership, GameState, HexCoord, HEX_DIRECTIONS, PowerupKind } from '../types';
 import { hexToWorld } from '../utils/hexMath';
 import * as THREE from 'three';
 
@@ -59,14 +59,68 @@ const MoveIndicator: React.FC = () => {
   );
 };
 
+const PowerupPickup: React.FC<{ kind: PowerupKind; powerupId: string }> = ({ kind, powerupId }) => {
+  const ref = useRef<THREE.Group>(null);
+  const color = kind === 'positive' ? '#22d3ee' : '#fb7185';
+
+  useFrame((state) => {
+    if (!ref.current) return;
+    ref.current.rotation.y += 0.03;
+    ref.current.position.y = 0.35 + Math.sin(state.clock.elapsedTime * 3) * 0.05;
+  });
+
+  return (
+    <group ref={ref} position={[0, 0.42, 0]}>
+      {powerupId === 'surge' && (
+        <mesh position={[0, 0.08, 0]}>
+          <octahedronGeometry args={[0.18]} />
+          <meshStandardMaterial color="white" emissive={color} emissiveIntensity={3.2} roughness={0.1} />
+        </mesh>
+      )}
+      {powerupId === 'overclock' && (
+        <mesh position={[0, 0.1, 0]}>
+          <coneGeometry args={[0.2, 0.32, 18]} />
+          <meshStandardMaterial color="white" emissive={color} emissiveIntensity={3.0} roughness={0.12} />
+        </mesh>
+      )}
+      {powerupId === 'aegis' && (
+        <mesh position={[0, 0.09, 0]}>
+          <sphereGeometry args={[0.18, 18, 18]} />
+          <meshStandardMaterial color="white" emissive={color} emissiveIntensity={2.8} roughness={0.12} />
+        </mesh>
+      )}
+      {powerupId === 'stasis' && (
+        <mesh position={[0, 0.08, 0]}>
+          <tetrahedronGeometry args={[0.2]} />
+          <meshStandardMaterial color="#0f172a" emissive={color} emissiveIntensity={2.6} roughness={0.2} />
+        </mesh>
+      )}
+      {powerupId === 'emp' && (
+        <mesh position={[0, 0.08, 0]}>
+          <dodecahedronGeometry args={[0.2]} />
+          <meshStandardMaterial color="#0f172a" emissive={color} emissiveIntensity={2.8} roughness={0.2} />
+        </mesh>
+      )}
+      {powerupId === 'corrupt' && (
+        <mesh position={[0, 0.08, 0]}>
+          <icosahedronGeometry args={[0.2, 0]} />
+          <meshStandardMaterial color="#0b1120" emissive={color} emissiveIntensity={2.6} roughness={0.2} />
+        </mesh>
+      )}
+      <pointLight color={color} intensity={2.2} distance={3.2} />
+    </group>
+  );
+};
+
 interface HexCellProps {
   q: number;
   r: number;
   type: CellType;
   owner: Ownership;
+  powerupId?: string;
 }
 
-const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner }) => {
+const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner, powerupId }) => {
   const { movePlayer, playerPos, enemyPos, gameState } = useGameStore();
   const position = useMemo(() => hexToWorld(q, r), [q, r]);
   const meshRef = useRef<THREE.Group>(null);
@@ -143,6 +197,10 @@ const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner }) => {
           <dodecahedronGeometry args={[0.4]} />
           <meshStandardMaterial color="#64748b" roughness={0.1} metalness={0.9} emissive="#22d3ee" emissiveIntensity={0.15} />
         </mesh>
+      )}
+
+      {powerupId && POWERUP_MAP[powerupId] && (
+        <PowerupPickup kind={POWERUP_MAP[powerupId].kind} powerupId={powerupId} />
       )}
     </group>
   );

@@ -24,7 +24,12 @@ const UIOverlay: React.FC = () => {
     toggleLevelMenu,
     initLevel,
     grid,
-    setAppFlow
+    setAppFlow,
+    lastPowerup,
+    playerShield,
+    enemyShield,
+    skipPlayerTurn,
+    skipEnemyTurn
   } = useGameStore();
 
   const currentLevel = LEVELS[levelIndex];
@@ -116,7 +121,7 @@ const UIOverlay: React.FC = () => {
       </div>
 
       {/* Center Turn Alert */}
-      <div className="flex justify-center mb-6">
+      <div className="flex flex-col items-center mb-6 gap-3">
         <div className={`flex items-center gap-3 px-8 py-3 rounded-full font-black text-sm shadow-2xl transition-all border-b-4 ${
           gameState === GameState.PLAYER_TURN 
             ? 'bg-cyan-600 text-white border-cyan-800 animate-pulse' 
@@ -125,6 +130,23 @@ const UIOverlay: React.FC = () => {
           {gameState === GameState.PLAYER_TURN ? <Zap size={16} fill="white" /> : <Sword size={16} />}
           {gameState === GameState.PLAYER_TURN ? 'COMMAND PHASE' : 'ENEMY CALCULATING...'}
         </div>
+        {lastPowerup && (
+          <div className={`px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-xl ${
+            lastPowerup.kind === 'positive'
+              ? 'bg-cyan-950/50 text-cyan-300 border-cyan-500/40'
+              : 'bg-rose-950/50 text-rose-300 border-rose-500/40'
+          }`}>
+            <div>{lastPowerup.owner === Ownership.PLAYER ? 'You' : 'Enemy'} picked {lastPowerup.name}</div>
+            <div className="text-[9px] font-semibold tracking-[0.12em] text-slate-300">{lastPowerup.description}</div>
+          </div>
+        )}
+        {(skipPlayerTurn || skipEnemyTurn) && (
+          <div className={`px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.25em] border shadow-xl ${
+            skipPlayerTurn ? 'bg-rose-950/40 text-rose-300 border-rose-500/40' : 'bg-cyan-950/40 text-cyan-300 border-cyan-500/40'
+          }`}>
+            {skipPlayerTurn ? 'Stasis: Your next turn is skipped' : 'Stasis: Enemy turn skipped'}
+          </div>
+        )}
       </div>
 
       {/* Victory / Defeat Modal */}
@@ -234,6 +256,26 @@ const UIOverlay: React.FC = () => {
              <p className="text-[9px] font-black text-cyan-500 uppercase tracking-widest mb-2">Tactical Memo</p>
              <p className="text-xs text-slate-400 leading-snug">Capture planetary bases or achieve transmission coverage goal to win. Enclose clusters for mass assimilation.</p>
            </div>
+        </div>
+      </div>
+
+      {/* Powerup Status */}
+      <div className="absolute bottom-6 left-6 pointer-events-none">
+        <div className="bg-slate-900/85 backdrop-blur-sm p-3 rounded-2xl shadow-lg border border-slate-700 text-[9px] font-black uppercase tracking-widest text-slate-400 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-cyan-400" />
+            <span>Positive pickup</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-rose-400" />
+            <span>Negative pickup</span>
+          </div>
+          <div className="text-[8px] text-slate-500 tracking-widest">
+            Shields: You {playerShield} / Enemy {enemyShield}
+          </div>
+          <div className="text-[8px] text-slate-500 tracking-widest">
+            Skips: You {skipPlayerTurn ? 'Next' : 'None'} / Enemy {skipEnemyTurn ? 'Next' : 'None'}
+          </div>
         </div>
       </div>
     </div>
