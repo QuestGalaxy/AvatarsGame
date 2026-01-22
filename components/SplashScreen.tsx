@@ -15,21 +15,27 @@ const SplashScreen: React.FC = () => {
   }, [setAppFlow]);
 
   return (
-    <div className="absolute inset-0 z-[100] bg-[#020617] flex flex-col items-center justify-center animate-in fade-in duration-700">
+    <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center animate-in fade-in duration-700 bg-gradient-to-br from-sky-300 via-fuchsia-300 to-amber-200">
+      <div className="absolute inset-0 opacity-60">
+        <div className="absolute -top-16 -left-10 w-40 h-40 rounded-full bg-white/30 blur-2xl" />
+        <div className="absolute top-24 right-8 w-28 h-28 rounded-full bg-yellow-200/50 blur-xl" />
+        <div className="absolute bottom-12 left-10 w-32 h-32 rounded-full bg-pink-200/60 blur-2xl" />
+      </div>
+
       <div className="relative">
-        <div className="w-24 h-24 bg-cyan-600 rounded-3xl rotate-45 flex items-center justify-center shadow-[0_0_50px_rgba(8,145,178,0.5)] animate-pulse">
-           <div className="w-16 h-16 bg-cyan-400/20 rounded-full blur-2xl absolute animate-ping" />
-           <Orbit className="text-white" size={48} />
+        <div className="w-24 h-24 bg-fuchsia-500 rounded-3xl rotate-12 flex items-center justify-center shadow-[0_0_60px_rgba(244,114,182,0.6)] animate-pulse">
+          <div className="w-16 h-16 bg-yellow-200/60 rounded-full blur-xl absolute animate-ping" />
+          <Orbit className="text-white" size={48} />
         </div>
       </div>
-      <div className="mt-12 text-center space-y-2">
-        <h1 className="text-4xl font-black text-white tracking-tighter">AVATARS</h1>
-        <p className="text-cyan-400 font-black text-xs uppercase tracking-[0.3em] opacity-80">OWN THE GALAXY</p>
+      <div className="mt-10 text-center space-y-2">
+        <h1 className="text-4xl font-black text-white tracking-tighter drop-shadow-[0_6px_20px_rgba(30,64,175,0.35)]">AVATARS</h1>
+        <p className="text-blue-700 font-black text-xs uppercase tracking-[0.3em] opacity-90">OWN THE GALAXY</p>
       </div>
       
       <div className="absolute bottom-12 flex flex-col items-center">
-        <div className="w-8 h-1 bg-slate-800 rounded-full overflow-hidden w-32">
-          <div className="h-full bg-cyan-500 animate-[loading_2.5s_ease-in-out_infinite]" style={{ width: '40%' }} />
+        <div className="h-2 rounded-full overflow-hidden w-32 bg-white/50 border border-white/60 shadow-[0_8px_30px_rgba(59,130,246,0.25)]">
+          <div className="h-full bg-gradient-to-r from-pink-400 via-yellow-300 to-sky-400 animate-[loading_2.5s_ease-in-out_infinite]" style={{ width: '40%' }} />
         </div>
       </div>
 

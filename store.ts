@@ -18,6 +18,12 @@ export const LEVELS: LevelDefinition[] = [
     enemyStart: { q: 3, r: 0 },
     rocks: [{ q: 0, r: 0 }, { q: 0, r: 1 }, { q: 0, r: -1 }],
     atmosphere: 'night',
+    platformColors: {
+      base: '#38bdf8',
+      ring: '#fef08a',
+      underside: '#a78bfa',
+    },
+    enemyCleverness: 10,
     winThreshold: 0.6
   },
   {
@@ -27,6 +33,12 @@ export const LEVELS: LevelDefinition[] = [
     enemyStart: { q: 4, r: -2 },
     rocks: [{ q: -1, r: 0 }, { q: 1, r: 0 }, { q: 0, r: 0 }],
     atmosphere: 'sunset',
+    platformColors: {
+      base: '#f472b6',
+      ring: '#fde047',
+      underside: '#fb923c',
+    },
+    enemyCleverness: 35,
     winThreshold: 0.6
   },
   {
@@ -36,6 +48,12 @@ export const LEVELS: LevelDefinition[] = [
     enemyStart: { q: 5, r: 0 },
     rocks: [{ q: -2, r: 1 }, { q: 2, r: -1 }],
     atmosphere: 'night',
+    platformColors: {
+      base: '#22d3ee',
+      ring: '#facc15',
+      underside: '#f472b6',
+    },
+    enemyCleverness: 70,
     winThreshold: 0.55
   }
 ];
@@ -70,6 +88,7 @@ const getNeighbors = (coord: HexCoord): HexCoord[] => {
 };
 
 const isSameCoord = (a: HexCoord, b: HexCoord) => a.q === b.q && a.r === b.r;
+const dist = (a: HexCoord, b: HexCoord) => Math.max(Math.abs(a.q - b.q), Math.abs(a.r - b.r), Math.abs(a.q + a.r - b.q - b.r));
 
 function getOwnershipCounts(grid: Record<string, CellData>) {
   let player = 0, enemy = 0, neutral = 0;
@@ -117,6 +136,66 @@ function performRegionCapture(grid: Record<string, CellData>, owner: Ownership, 
   });
 
   return result;
+}
+
+function selectEnemyMove(
+  neighbors: HexCoord[],
+  grid: Record<string, CellData>,
+  level: LevelDefinition,
+  playerPos: HexCoord,
+  enemyPos: HexCoord
+): HexCoord {
+  const cleverness = Math.max(0, Math.min(100, level.enemyCleverness ?? 10));
+  const counts = getOwnershipCounts(grid);
+
+  if (cleverness <= 15) {
+    const baseAttack = neighbors.find(n => isSameCoord(n, level.playerStart));
+    const neutralAttack = neighbors.find(n => grid[getCoordKey(n.q, n.r)].owner === Ownership.NEUTRAL);
+    const aggressive = neighbors.sort((a, b) => dist(a, level.playerStart) - dist(b, level.playerStart))[0];
+    return baseAttack || neutralAttack || aggressive;
+  }
+
+  const maxDist = level.size * 2;
+  const playerNeighbors = getNeighbors(playerPos);
+
+  const scored = neighbors.map(target => {
+    const key = getCoordKey(target.q, target.r);
+    const cell = grid[key];
+    let score = 0;
+
+    if (isSameCoord(target, level.playerStart)) score += 100;
+
+    if (cleverness >= 20 && cell.owner === Ownership.NEUTRAL) score += 6;
+    if (cleverness >= 25 && cell.owner === Ownership.PLAYER) score += 4;
+
+    if (cleverness >= 40 && cell.owner === Ownership.PLAYER && counts.ENEMY <= counts.PLAYER) {
+      score -= 40;
+    }
+
+    if (cleverness >= 50) {
+      const d = dist(target, level.playerStart);
+      score += (maxDist - d) * 0.6;
+    }
+
+    if (cleverness >= 60) {
+      const newGrid = { ...grid, [key]: { ...cell, owner: Ownership.ENEMY } };
+      const filledGrid = performRegionCapture(newGrid, Ownership.ENEMY, level.size);
+      const after = getOwnershipCounts(filledGrid);
+      score += (after.ENEMY - counts.ENEMY) * 0.8;
+    }
+
+    if (cleverness >= 80) {
+      const blocksPlayer = playerNeighbors.some(n => isSameCoord(n, target));
+      if (blocksPlayer) score += 4;
+    }
+
+    score += Math.random() * 0.25;
+
+    return { target, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].target;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -184,6 +263,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   movePlayer: (target) => {
     const { gameState, playerPos, grid, levelIndex, isCinematic } = get();
     if (gameState !== GameState.PLAYER_TURN || isCinematic) return;
+    const level = LEVELS[levelIndex];
 
     const neighbors = getNeighbors(playerPos);
     const isAdjacent = neighbors.some(n => isSameCoord(n, target));
@@ -195,7 +275,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (cell.owner === Ownership.ENEMY) {
       const counts = getOwnershipCounts(grid);
-      if (counts.PLAYER <= counts.ENEMY) {
+      if (counts.PLAYER <= counts.ENEMY && !isSameCoord(target, level.enemyStart)) {
         audio.playLose(); 
         return;
       }
@@ -208,7 +288,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     audio.playMove();
     set({ grid: filledGrid, prevPlayerPos: playerPos, playerPos: target, gameState: GameState.ENEMY_TURN });
 
-    const level = LEVELS[levelIndex];
     if (isSameCoord(target, level.enemyStart)) {
       set({ gameState: GameState.WON });
       audio.playWin();
@@ -225,9 +304,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   moveEnemy: () => {
-    const { gameState, enemyPos, grid, levelIndex } = get();
+    const { gameState, enemyPos, grid, levelIndex, playerPos } = get();
     if (gameState !== GameState.ENEMY_TURN) return;
 
+    const level = LEVELS[levelIndex];
     const neighbors = getNeighbors(enemyPos).filter(n => {
       const cell = grid[getCoordKey(n.q, n.r)];
       return cell && cell.type !== CellType.ROCK;
@@ -238,35 +318,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
 
-    const baseAttack = neighbors.find(n => isSameCoord(n, LEVELS[levelIndex].playerStart));
-    const neutralAttack = neighbors.find(n => grid[getCoordKey(n.q, n.r)].owner === Ownership.NEUTRAL);
-    const dist = (a: HexCoord, b: HexCoord) => Math.max(Math.abs(a.q - b.q), Math.abs(a.r - b.r), Math.abs(a.q + a.r - b.q - b.r));
-    const aggressive = neighbors.sort((a, b) => dist(a, LEVELS[levelIndex].playerStart) - dist(b, LEVELS[levelIndex].playerStart))[0];
-
-    const target = baseAttack || neutralAttack || aggressive;
+    const target = selectEnemyMove(neighbors, grid, level, playerPos, enemyPos);
     const key = getCoordKey(target.q, target.r);
     
     const counts = getOwnershipCounts(grid);
-    if (grid[key].owner === Ownership.PLAYER && counts.ENEMY <= counts.PLAYER) {
+    if (grid[key].owner === Ownership.PLAYER && counts.ENEMY <= counts.PLAYER && !isSameCoord(target, level.playerStart)) {
       set({ gameState: GameState.PLAYER_TURN });
       return;
     }
 
     const newGrid = { ...grid };
     newGrid[key] = { ...newGrid[key], owner: Ownership.ENEMY };
-    const filledGrid = performRegionCapture(newGrid, Ownership.ENEMY, LEVELS[levelIndex].size);
+    const filledGrid = performRegionCapture(newGrid, Ownership.ENEMY, level.size);
 
     audio.playMove();
     set({ grid: filledGrid, prevEnemyPos: enemyPos, enemyPos: target, gameState: GameState.PLAYER_TURN });
 
-    if (isSameCoord(target, LEVELS[levelIndex].playerStart)) {
+    if (isSameCoord(target, level.playerStart)) {
       set({ gameState: GameState.LOST });
       audio.playLose();
       return;
     }
 
     const finalCounts = getOwnershipCounts(filledGrid);
-    if (finalCounts.ENEMY / finalCounts.TOTAL >= LEVELS[levelIndex].winThreshold) {
+    if (finalCounts.ENEMY / finalCounts.TOTAL >= level.winThreshold) {
       set({ gameState: GameState.LOST });
       audio.playLose();
     }

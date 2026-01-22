@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameStore, LEVELS } from '../store';
 import { GameState, AppFlow, Ownership, CellData } from '../types';
 import { 
@@ -11,10 +11,12 @@ import {
   Target,
   Zap,
   Sword,
-  X
+  X,
+  Info
 } from 'lucide-react';
 
 const UIOverlay: React.FC = () => {
+  const [showRules, setShowRules] = useState(false);
   const { 
     gameState, 
     levelIndex,
@@ -68,6 +70,26 @@ const UIOverlay: React.FC = () => {
           >
             <Home size={18} />
           </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowRules(prev => !prev)}
+              className="bg-slate-900/90 p-3 rounded-2xl shadow-lg border border-slate-700 w-fit active:scale-90 transition-transform text-white"
+              aria-label="Toggle rules"
+            >
+              <Info size={18} />
+            </button>
+            {showRules && (
+              <div className="absolute left-0 mt-3 bg-slate-900/95 p-3 rounded-2xl shadow-lg border border-slate-700 w-56">
+                <p className="text-[9px] font-black text-cyan-400 uppercase tracking-widest mb-2">Quick Rules</p>
+                <div className="text-[10px] text-slate-300 leading-snug space-y-1">
+                  <div>Move 1 hex.</div>
+                  <div>Claim tiles; rocks block.</div>
+                  <div>Surround to capture.</div>
+                  <div>Win: enemy base or {Math.round(currentLevel.winThreshold * 100)}%.</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Global Control Bar */}

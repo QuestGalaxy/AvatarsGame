@@ -20,31 +20,41 @@ const BaseStructure: React.FC<{ owner: Ownership }> = ({ owner }) => {
   return (
     <group ref={ref}>
       <mesh castShadow>
-        <cylinderGeometry args={[0.4, 0.5, 0.8, 6]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} metalness={0.9} roughness={0.1} />
+        <cylinderGeometry args={[0.3, 0.38, 0.6, 6]} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.6} metalness={0.6} roughness={0.2} />
       </mesh>
-      <mesh position={[0, 0.6, 0]}>
-        <octahedronGeometry args={[0.25]} />
-        <meshStandardMaterial color="white" emissive={color} emissiveIntensity={2} />
+      <mesh position={[0, 0.45, 0]}>
+        <octahedronGeometry args={[0.18]} />
+        <meshStandardMaterial color="white" emissive={color} emissiveIntensity={1.4} />
       </mesh>
-      <pointLight color={color} intensity={2} distance={4} />
+      <pointLight color={color} intensity={1.4} distance={3.5} />
     </group>
   );
 };
 
 const MoveIndicator: React.FC = () => {
   const ref = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+
   useFrame((state) => {
-    if (ref.current) {
-      const s = 1.1 + Math.sin(state.clock.elapsedTime * 6) * 0.05;
-      ref.current.scale.set(s, 1, s);
-      ref.current.rotation.y += 0.04;
-    }
+    if (!ref.current || !materialRef.current) return;
+    const pulse = 1 + Math.sin(state.clock.elapsedTime * 4.5) * 0.08;
+    ref.current.scale.set(pulse, 1, pulse);
+    materialRef.current.opacity = 0.2 + Math.sin(state.clock.elapsedTime * 4.5) * 0.05;
   });
+
   return (
-    <mesh ref={ref} position={[0, 0.15, 0]} rotation={[0, Math.PI / 6, 0]}>
-      <torusGeometry args={[0.7, 0.03, 12, 6]} />
-      <meshBasicMaterial color="#22d3ee" transparent opacity={0.6} />
+    <mesh ref={ref} position={[0, 0.12, 0]} rotation={[0, Math.PI / 6, 0]}>
+      <cylinderGeometry args={[0.85, 0.85, 0.06, 6]} />
+      <meshStandardMaterial
+        ref={materialRef}
+        color="#fef9c3"
+        emissive="#fde68a"
+        emissiveIntensity={0.25}
+        transparent
+        opacity={0.2}
+        roughness={0.55}
+      />
     </mesh>
   );
 };
@@ -57,7 +67,7 @@ interface HexCellProps {
 }
 
 const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner }) => {
-  const { movePlayer, playerPos, gameState } = useGameStore();
+  const { movePlayer, playerPos, enemyPos, gameState } = useGameStore();
   const position = useMemo(() => hexToWorld(q, r), [q, r]);
   const meshRef = useRef<THREE.Group>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -124,7 +134,9 @@ const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner }) => {
       </group>
       
       {isValidMove && <MoveIndicator />}
-      {type === CellType.BASE && <BaseStructure owner={owner} />}
+      {type === CellType.BASE && !(playerPos.q === q && playerPos.r === r) && !(enemyPos.q === q && enemyPos.r === r) && (
+        <BaseStructure owner={owner} />
+      )}
 
       {type === CellType.ROCK && (
         <mesh position={[0, 0.4, 0]} castShadow>

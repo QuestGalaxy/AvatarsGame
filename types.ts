@@ -53,6 +53,12 @@ export interface LevelDefinition {
   enemyStart: HexCoord;
   rocks: HexCoord[];
   atmosphere?: 'day' | 'sunset' | 'night';
+  platformColors?: {
+    base: string;
+    ring: string;
+    underside: string;
+  };
+  enemyCleverness?: number; // 0-100 scale
   winThreshold: number; // Percentage like 0.6
 }
 
