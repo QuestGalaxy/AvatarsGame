@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { useGameStore } from '../store';
 import { AppFlow } from '../types';
-import { Play, HelpCircle, Target, Github } from 'lucide-react';
+import { Play, HelpCircle, Target, Github, Terminal, Cpu } from 'lucide-react';
 import { audio } from '../utils/audio';
 
 const LandingPage: React.FC = () => {
@@ -14,95 +13,70 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="absolute inset-0 z-[90] flex flex-col items-center justify-center p-6 bg-gradient-to-br from-sky-200 via-fuchsia-200 to-amber-200 animate-in fade-in duration-500">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-10 left-8 w-32 h-32 rounded-full bg-white/50 blur-2xl" />
-        <div className="absolute top-28 right-10 w-40 h-40 rounded-full bg-yellow-200/60 blur-3xl" />
-        <div className="absolute bottom-10 right-6 w-36 h-36 rounded-full bg-pink-200/60 blur-2xl" />
-      </div>
-      <div className="w-full max-w-sm flex flex-col items-center gap-8 relative">
+    <div className="absolute inset-0 z-[90] flex flex-col items-center justify-center p-6 bg-slate-950 overflow-hidden font-sans">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,#3b82f615,transparent)]" />
+      
+      <div className="w-full max-w-md flex flex-col items-center gap-12 relative z-10">
         
         {/* Title Block */}
-        <div className="text-center animate-in slide-in-from-top-8 duration-700">
-          <div className="inline-block bg-white/85 px-8 py-5 rounded-[32px] shadow-[0_20px_60px_rgba(59,130,246,0.25)] border border-white/80 mb-4 animate-float">
-             <h1 className="text-5xl font-black text-slate-900 tracking-tighter leading-tight">
-               AVATARS<br/>
-               <span className="text-fuchsia-500 animate-shimmer inline-block">GALAXY</span>
-             </h1>
+        <div className="text-center space-y-6 animate-in slide-in-from-top-8 duration-700">
+          <div className="relative inline-block">
+            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg blur opacity-40 animate-pulse" />
+            <div className="relative bg-slate-900 border border-slate-800 px-8 py-4 rounded-lg shadow-2xl">
+              <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-tight">
+                AVATARS<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">GALAXY</span>
+              </h1>
+            </div>
           </div>
-          <p className="text-blue-700 font-bold bg-white/70 px-4 py-1.5 rounded-full text-sm inline-block border border-white/80 tracking-wide shadow-sm">OWN THE COSMOS</p>
+          <div className="flex items-center justify-center gap-2 text-cyan-500/80 font-mono text-xs tracking-[0.2em]">
+            <Terminal size={14} />
+            <span>SYSTEM_READY</span>
+          </div>
         </div>
 
         {/* Action Block */}
         <div className="w-full flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
           <button 
             onClick={handleStart}
-            className="group relative w-full bg-fuchsia-500 hover:bg-fuchsia-400 text-white font-black py-6 rounded-[32px] text-2xl shadow-[0_12px_40px_rgba(244,114,182,0.45)] transition-all active:scale-95 border-b-[8px] border-fuchsia-700 overflow-hidden"
+            className="group relative w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-6 rounded-xl text-2xl shadow-[0_0_40px_-10px_rgba(8,145,178,0.5)] transition-all active:scale-[0.98] border border-cyan-400/30 overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            <span className="flex items-center justify-center gap-4">
-               DEPLOY UNIT <Play fill="white" size={28} />
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:250%_250%,100%_100%] bg-[position:-100%_0,0_0] bg-no-repeat transition-[background-position_0s] duration-[0s] group-hover:bg-[position:200%_0,0_0] group-hover:duration-[1.5s]" />
+            <span className="flex items-center justify-center gap-4 relative z-10">
+               INITIALIZE MISSION <Play fill="currentColor" className="text-cyan-100" size={24} />
             </span>
           </button>
 
           <div className="grid grid-cols-2 gap-4">
-            <button className="bg-white/90 hover:bg-white text-slate-900 font-black py-4 rounded-3xl shadow-lg transition-all active:scale-95 border-b-4 border-slate-200 flex items-center justify-center gap-2 border border-white">
-              <HelpCircle size={20} className="text-fuchsia-500" /> INTEL
+            <button className="bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white font-bold py-4 rounded-xl border border-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2 backdrop-blur-sm group">
+              <HelpCircle size={18} className="text-slate-500 group-hover:text-cyan-400 transition-colors" /> 
+              <span className="text-sm tracking-wide">INTEL</span>
             </button>
-            <button className="bg-sky-400 hover:bg-sky-300 text-white font-black py-4 rounded-3xl shadow-lg transition-all active:scale-95 border-b-4 border-sky-600 flex items-center justify-center gap-2">
-              <Github size={20} /> FLEET
+            <button className="bg-slate-900/50 hover:bg-slate-800 text-slate-300 hover:text-white font-bold py-4 rounded-xl border border-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2 backdrop-blur-sm group">
+              <Github size={18} className="text-slate-500 group-hover:text-purple-400 transition-colors" /> 
+              <span className="text-sm tracking-wide">SOURCE</span>
             </button>
           </div>
         </div>
 
-        {/* Feature Cards */}
-        <div className="w-full bg-white/85 p-6 rounded-[40px] shadow-2xl border border-white/80 space-y-4 animate-in zoom-in duration-700 delay-300">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center text-sky-500 shrink-0 border border-sky-200">
-               <Target size={24} />
-            </div>
-            <div>
-              <h3 className="font-black text-slate-900 uppercase tracking-tight">System Capture</h3>
-              <p className="text-xs text-slate-600 font-medium">Encircle planetary clusters to gain immediate control of entire solar sectors.</p>
-            </div>
+        {/* Footer Status */}
+        <div className="grid grid-cols-3 gap-4 w-full pt-8 border-t border-slate-800/50">
+          <div className="flex flex-col items-center gap-1 text-slate-500">
+            <Cpu size={16} />
+            <span className="text-[10px] uppercase tracking-wider font-bold">Core: Online</span>
           </div>
-          <div className="h-px bg-slate-200 w-full" />
-          <p className="text-[10px] text-center font-black text-slate-500 tracking-widest uppercase">Deep Space Protocol 1.0 • v.Galaxy</p>
+          <div className="flex flex-col items-center gap-1 text-slate-500">
+            <Target size={16} />
+            <span className="text-[10px] uppercase tracking-wider font-bold">Target: Locked</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 text-slate-500">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+            <span className="text-[10px] uppercase tracking-wider font-bold">Net: Stable</span>
+          </div>
         </div>
       </div>
-
-      <div className="absolute bottom-8 text-center">
-         <p className="text-blue-700/70 font-black text-[10px] tracking-[0.2em] uppercase">Initialize transmission to begin</p>
-      </div>
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-        .animate-shimmer {
-          background: linear-gradient(
-            to right,
-            #f472b6 0%,
-            #facc15 25%,
-            #38bdf8 50%,
-            #a78bfa 75%,
-            #f472b6 100%
-          );
-          background-size: 200% auto;
-          color: transparent;
-          -webkit-background-clip: text;
-          background-clip: text;
-          animation: shimmer 3s linear infinite;
-        }
-      `}</style>
     </div>
   );
 };
