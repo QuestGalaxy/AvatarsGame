@@ -57,19 +57,22 @@ export interface PowerupDefinition {
   description: string;
 }
 
+export type WeatherType = 'day' | 'sunset' | 'night';
+
 export interface LevelDefinition {
   name: string;
   size: number;
   playerStart: HexCoord;
   enemyStart: HexCoord;
   rocks: HexCoord[];
-  atmosphere?: 'day' | 'sunset' | 'night';
+  atmosphere?: WeatherType;
   platformColors?: {
     base: string;
     ring: string;
     underside: string;
   };
   enemyCleverness?: number; // 0-100 scale
+  difficulty?: string;
   winThreshold: number; // Percentage like 0.6
 }
 

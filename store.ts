@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppFlow, GameState, CellType, CellData, HexCoord, HEX_DIRECTIONS, Ownership, LevelDefinition, Character, PowerupDefinition, PowerupKind, WorldDefinition } from './types';
+import { AppFlow, GameState, CellType, CellData, HexCoord, HEX_DIRECTIONS, Ownership, LevelDefinition, Character, PowerupDefinition, PowerupKind, WorldDefinition, WeatherType } from './types';
 import { audio } from './utils/audio';
 
 export const CHARACTERS: Character[] = [
@@ -19,6 +19,7 @@ const WORLD_1_LEVELS: LevelDefinition[] = [
     atmosphere: 'night',
     platformColors: { base: '#38bdf8', ring: '#fef08a', underside: '#a78bfa' },
     enemyCleverness: 10,
+    difficulty: 'Easy',
     winThreshold: 0.6
   },
   {
@@ -30,6 +31,7 @@ const WORLD_1_LEVELS: LevelDefinition[] = [
     atmosphere: 'day',
     platformColors: { base: '#38bdf8', ring: '#fef08a', underside: '#a78bfa' },
     enemyCleverness: 20,
+    difficulty: 'Normal',
     winThreshold: 0.6
   },
   {
@@ -41,6 +43,7 @@ const WORLD_1_LEVELS: LevelDefinition[] = [
     atmosphere: 'night',
     platformColors: { base: '#38bdf8', ring: '#fef08a', underside: '#a78bfa' },
     enemyCleverness: 30,
+    difficulty: 'Hard',
     winThreshold: 0.6
   }
 ];
@@ -55,6 +58,7 @@ const WORLD_2_LEVELS: LevelDefinition[] = [
     atmosphere: 'sunset',
     platformColors: { base: '#f472b6', ring: '#fde047', underside: '#fb923c' },
     enemyCleverness: 35,
+    difficulty: 'Expert',
     winThreshold: 0.6
   },
   {
@@ -66,6 +70,7 @@ const WORLD_2_LEVELS: LevelDefinition[] = [
     atmosphere: 'sunset',
     platformColors: { base: '#f472b6', ring: '#fde047', underside: '#fb923c' },
     enemyCleverness: 45,
+    difficulty: 'Master',
     winThreshold: 0.6
   },
   {
@@ -77,6 +82,7 @@ const WORLD_2_LEVELS: LevelDefinition[] = [
     atmosphere: 'night',
     platformColors: { base: '#f472b6', ring: '#fde047', underside: '#fb923c' },
     enemyCleverness: 55,
+    difficulty: 'Grandmaster',
     winThreshold: 0.6
   }
 ];
@@ -91,6 +97,7 @@ const WORLD_3_LEVELS: LevelDefinition[] = [
     atmosphere: 'night',
     platformColors: { base: '#22d3ee', ring: '#facc15', underside: '#f472b6' },
     enemyCleverness: 70,
+    difficulty: 'Nightmare',
     winThreshold: 0.55
   },
   {
@@ -102,6 +109,7 @@ const WORLD_3_LEVELS: LevelDefinition[] = [
     atmosphere: 'night',
     platformColors: { base: '#22d3ee', ring: '#facc15', underside: '#f472b6' },
     enemyCleverness: 80,
+    difficulty: 'Hell',
     winThreshold: 0.55
   },
   {
@@ -113,6 +121,7 @@ const WORLD_3_LEVELS: LevelDefinition[] = [
     atmosphere: 'night',
     platformColors: { base: '#22d3ee', ring: '#facc15', underside: '#f472b6' },
     enemyCleverness: 90,
+    difficulty: 'Impossible',
     winThreshold: 0.55
   }
 ];

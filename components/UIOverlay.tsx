@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useGameStore, LEVELS } from '../store';
+import { useGameStore, WORLDS } from '../store';
 import { GameState, AppFlow, Ownership, CellData } from '../types';
+import { audio } from '../utils/audio';
 import { 
   Menu, 
   Home, 
@@ -30,10 +31,12 @@ const UIOverlay: React.FC = () => {
     playerShield,
     enemyShield,
     skipPlayerTurn,
-    skipEnemyTurn
+    skipEnemyTurn,
+    selectedWorldId
   } = useGameStore();
 
-  const currentLevel = LEVELS[levelIndex];
+  const currentWorld = WORLDS.find(w => w.id === selectedWorldId) || WORLDS[0];
+  const currentLevel = currentWorld.levels[levelIndex % currentWorld.levels.length];
 
   const stats = React.useMemo(() => {
     let p = 0, e = 0, t = 0;
@@ -62,7 +65,7 @@ const UIOverlay: React.FC = () => {
         <div className="flex flex-col gap-2">
           <button 
             onClick={toggleLevelMenu}
-            className="group bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-slate-700/50 hover:border-cyan-500/50 transition-all active:scale-95"
+            className="group bg-slate-900/40 backdrop-blur-xl p-3 rounded-2xl shadow-lg border border-white/10 hover:border-cyan-500/50 transition-all active:scale-95"
           >
             <div className="flex items-center gap-3">
               <Menu size={20} className="text-slate-300 group-hover:text-cyan-400" />
@@ -73,67 +76,72 @@ const UIOverlay: React.FC = () => {
             </div>
           </button>
 
-          <button 
-            onClick={() => setShowRules(!showRules)}
-            className="bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-slate-700/50 hover:border-cyan-500/50 transition-all active:scale-95 w-fit"
-          >
-             <Info size={20} className="text-slate-300 hover:text-cyan-400" />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                audio.playConfirm();
+                setAppFlow(AppFlow.WORLD_SELECT);
+              }}
+              className="bg-slate-900/40 backdrop-blur-xl p-3 rounded-2xl shadow-lg border border-white/10 hover:border-cyan-500/50 transition-all active:scale-95 flex-1 flex justify-center"
+            >
+               <Home size={20} className="text-slate-300 hover:text-cyan-400" />
+            </button>
+            <button 
+              onClick={() => setShowRules(!showRules)}
+              className="bg-slate-900/40 backdrop-blur-xl p-3 rounded-2xl shadow-lg border border-white/10 hover:border-cyan-500/50 transition-all active:scale-95 flex-1 flex justify-center"
+            >
+               <Info size={20} className="text-slate-300 hover:text-cyan-400" />
+            </button>
+          </div>
         </div>
 
-        {/* Center: Turn Indicator */}
-        <div className={`
-          absolute left-1/2 -translate-x-1/2 top-4
-          flex items-center gap-3 px-6 py-2 rounded-full border shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-500
-          ${gameState === GameState.PLAYER_TURN 
-            ? 'bg-cyan-950/80 border-cyan-500/30 text-cyan-400' 
-            : 'bg-rose-950/80 border-rose-500/30 text-rose-400'}
-        `}>
-          {gameState === GameState.PLAYER_TURN ? (
-             <Zap size={18} className="animate-pulse" />
-          ) : (
-             <Activity size={18} className="animate-pulse" />
-          )}
-          <span className="text-xs font-black tracking-[0.2em] uppercase">
-            {gameState === GameState.PLAYER_TURN ? 'COMMAND PHASE' : 'ENEMY TACTICS'}
-          </span>
-        </div>
-
-        {/* Right: Territory Stats */}
+        {/* Right: Territory Stats & Turn Indicator */}
         <div className="flex flex-col gap-2 items-end">
-          <div className="bg-slate-900/90 backdrop-blur-md p-3 rounded-2xl shadow-lg border border-slate-700/50 flex flex-col gap-2 w-40">
-            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-500">
-              <span>Control</span>
-              <span>{Math.round((stats.pCount + stats.eCount) / stats.total * 100)}%</span>
+          <div className="bg-slate-900/40 backdrop-blur-xl p-3 rounded-2xl shadow-lg border border-white/10 flex flex-col gap-2 w-48 transition-all duration-300">
+            
+            {/* Stats Header */}
+            <div className="flex justify-between items-center px-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-cyan-400 uppercase tracking-wider">YOU</span>
+                <span className="text-sm font-bold text-white leading-none">{stats.pPerc}%</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-white leading-none">{stats.ePerc}%</span>
+                <span className="text-[10px] font-black text-rose-400 uppercase tracking-wider">ENEMY</span>
+              </div>
             </div>
             
-            {/* Player Bar */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[9px] font-bold text-cyan-400">
-                <span>YOU</span>
-                <span>{stats.pPerc}%</span>
-              </div>
-              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)] transition-all duration-500 ease-out"
-                  style={{ width: `${stats.pPerc}%` }}
-                />
-              </div>
+            {/* Single Progress Bar */}
+            <div className="h-2 w-full bg-slate-800/50 rounded-full overflow-hidden flex relative shadow-inner">
+              <div 
+                className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.6)] transition-all duration-500 ease-out"
+                style={{ width: `${stats.pPerc}%` }}
+              />
+              <div className="flex-1" />
+              <div 
+                className="h-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.6)] transition-all duration-500 ease-out"
+                style={{ width: `${stats.ePerc}%` }}
+              />
             </div>
 
-            {/* Enemy Bar */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[9px] font-bold text-rose-400">
-                <span>ENEMY</span>
-                <span>{stats.ePerc}%</span>
-              </div>
-              <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)] transition-all duration-500 ease-out"
-                  style={{ width: `${stats.ePerc}%` }}
-                />
-              </div>
+            {/* Turn Indicator (Compact) */}
+            <div className={`
+              flex items-center justify-center gap-2 py-1 rounded-lg border transition-all duration-500
+              ${gameState === GameState.PLAYER_TURN 
+                ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-300' 
+                : 'bg-rose-500/10 border-rose-500/20 text-rose-300'}
+            `}>
+              {gameState === GameState.PLAYER_TURN ? (
+                 <Zap size={12} className="animate-pulse" />
+              ) : (
+                 <Activity size={12} className="animate-pulse" />
+              )}
+              <span className="text-[9px] font-bold tracking-widest uppercase">
+                {gameState === GameState.PLAYER_TURN ? 'COMMAND PHASE' : 'ENEMY TACTICS'}
+              </span>
             </div>
+
           </div>
         </div>
       </div>
@@ -303,7 +311,7 @@ const UIOverlay: React.FC = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
-          {LEVELS.map((level, i) => (
+          {currentWorld.levels.map((level, i) => (
             <div 
               key={i}
               onClick={() => { initLevel(i); toggleLevelMenu(); }}

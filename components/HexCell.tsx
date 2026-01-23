@@ -40,19 +40,19 @@ const MoveIndicator: React.FC = () => {
     if (!ref.current || !materialRef.current) return;
     const pulse = 1 + Math.sin(state.clock.elapsedTime * 4.5) * 0.08;
     ref.current.scale.set(pulse, 1, pulse);
-    materialRef.current.opacity = 0.2 + Math.sin(state.clock.elapsedTime * 4.5) * 0.05;
+    materialRef.current.opacity = 0.5 + Math.sin(state.clock.elapsedTime * 4.5) * 0.2;
   });
 
   return (
-    <mesh ref={ref} position={[0, 0.12, 0]} rotation={[0, Math.PI / 6, 0]}>
-      <cylinderGeometry args={[0.85, 0.85, 0.06, 6]} />
+    <mesh ref={ref} position={[0, 0.16, 0]} rotation={[0, Math.PI / 6, 0]}>
+      <cylinderGeometry args={[0.75, 0.75, 0.06, 6]} />
       <meshStandardMaterial
         ref={materialRef}
         color="#fef9c3"
         emissive="#fde68a"
-        emissiveIntensity={0.25}
+        emissiveIntensity={0.8}
         transparent
-        opacity={0.2}
+        opacity={0.5}
         roughness={0.55}
       />
     </mesh>
@@ -118,9 +118,10 @@ interface HexCellProps {
   type: CellType;
   owner: Ownership;
   powerupId?: string;
+  themeColors?: { base: string; ring: string; underside: string };
 }
 
-const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner, powerupId }) => {
+const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner, powerupId, themeColors }) => {
   const { movePlayer, playerPos, enemyPos, gameState } = useGameStore();
   const position = useMemo(() => hexToWorld(q, r), [q, r]);
   const meshRef = useRef<THREE.Group>(null);
@@ -134,14 +135,14 @@ const HexCell: React.FC<HexCellProps> = ({ q, r, type, owner, powerupId }) => {
 
   // Brightened core colors
   const colors = {
-    [Ownership.NEUTRAL]: '#334155', // Lighter slate
+    [Ownership.NEUTRAL]: themeColors?.base || '#334155', // Theme base or Lighter slate
     [Ownership.PLAYER]: '#0e7490', // Lighter teal
     [Ownership.ENEMY]: '#7f1d1d', // Slightly brighter red
   };
 
   // High-contrast cap colors
   const capColors = {
-    [Ownership.NEUTRAL]: '#475569',
+    [Ownership.NEUTRAL]: themeColors?.underside || '#475569',
     [Ownership.PLAYER]: '#22d3ee',
     [Ownership.ENEMY]: '#fb7185',
   };

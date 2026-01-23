@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Environment, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
-import { useGameStore, LEVELS } from '../store';
+import { useGameStore, WORLDS } from '../store';
 import HexCell from './HexCell';
 import Dragon from './Dragon';
 import Confetti from './Confetti';
@@ -217,7 +217,7 @@ const GalaxyBackdrop: React.FC<{ atmosphere: 'day' | 'sunset' | 'night' }> = ({ 
   );
 };
 
-const GalaxyField: React.FC<{ atmosphere: 'day' | 'sunset' | 'night' }> = ({ atmosphere }) => {
+const GalaxyField: React.FC<{ atmosphere: WeatherType }> = ({ atmosphere }) => {
   const groupRef = useRef<THREE.Group>(null);
   const sparkleColor =
     atmosphere === 'night' ? '#fde047' : atmosphere === 'sunset' ? '#fef08a' : '#fcd34d';
@@ -332,14 +332,7 @@ const FloatingMeteors: React.FC = () => {
   );
 };
 
-const IslandBase: React.FC = () => {
-  const { atmosphere, levelIndex } = useGameStore();
-  const level = LEVELS[levelIndex % LEVELS.length];
-  const platformColors = level.platformColors || {
-    base: '#1e293b',
-    ring: atmosphere === 'night' ? '#0891b2' : atmosphere === 'sunset' ? '#7c3aed' : '#22d3ee',
-    underside: '#0f172a',
-  };
+const IslandBase: React.FC<{ platformColors: { base: string; ring: string; underside: string } }> = ({ platformColors }) => {
   return (
     <group position={[0, -1.2, 0]}>
       {/* Main Base - Brightened from #020617 to #1e293b */}
@@ -368,8 +361,16 @@ const IslandBase: React.FC = () => {
 };
 
 const GameScene: React.FC = () => {
-  const { grid, initLevel, gameState, atmosphere, lastPowerup } = useGameStore();
+  const { grid, initLevel, gameState, atmosphere, lastPowerup, levelIndex, selectedWorldId } = useGameStore();
   const [effects, setEffects] = useState<{ id: number; kind: PowerupKind; powerupId: string; position: [number, number, number] }[]>([]);
+
+  const world = WORLDS.find(w => w.id === selectedWorldId) || WORLDS[0];
+  const level = world.levels[levelIndex % world.levels.length];
+  const platformColors = level.platformColors || {
+    base: '#1e293b',
+    ring: atmosphere === 'night' ? '#0891b2' : atmosphere === 'sunset' ? '#7c3aed' : '#22d3ee',
+    underside: '#0f172a',
+  };
 
   useEffect(() => { initLevel(); }, [initLevel]);
   useEffect(() => { audio.setAmbient(atmosphere); }, [atmosphere]);
@@ -416,7 +417,7 @@ const GameScene: React.FC = () => {
       <pointLight position={[40, 50, -80]} intensity={1.6} color="#fde047" />
 
       <group>
-        <IslandBase />
+        <IslandBase platformColors={platformColors} />
         <group position={[0, -0.05, 0]}>
           {gridArray.map((cell) => (
             <HexCell 
@@ -426,6 +427,7 @@ const GameScene: React.FC = () => {
               type={cell.type} 
               owner={cell.owner}
               powerupId={cell.powerupId}
+              themeColors={platformColors}
             />
           ))}
           <Dragon />
