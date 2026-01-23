@@ -3,6 +3,7 @@ export enum AppFlow {
   SPLASH = 'SPLASH',
   LANDING = 'LANDING',
   CHARACTER_SELECT = 'CHARACTER_SELECT',
+  WORLD_SELECT = 'WORLD_SELECT',
   GAME = 'GAME'
 }
 
@@ -70,6 +71,14 @@ export interface LevelDefinition {
   };
   enemyCleverness?: number; // 0-100 scale
   winThreshold: number; // Percentage like 0.6
+}
+
+export interface WorldDefinition {
+  id: string;
+  name: string;
+  description: string;
+  galaxyPos: { x: number; y: number; size: number; color: string }; // x,y in percentage (0-100)
+  levels: LevelDefinition[];
 }
 
 export const HEX_DIRECTIONS: HexCoord[] = [

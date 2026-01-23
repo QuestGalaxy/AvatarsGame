@@ -63,7 +63,7 @@ const CharacterSelect: React.FC = () => {
   const handleConfirm = () => {
     setSelectedCharacterId(char.id);
     audio.playConfirm();
-    setAppFlow(AppFlow.GAME);
+    setAppFlow(AppFlow.WORLD_SELECT);
   };
 
   return (

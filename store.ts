@@ -1,6 +1,5 @@
-
 import { create } from 'zustand';
-import { AppFlow, GameState, CellType, CellData, HexCoord, HEX_DIRECTIONS, Ownership, LevelDefinition, Character, PowerupDefinition, PowerupKind } from './types';
+import { AppFlow, GameState, CellType, CellData, HexCoord, HEX_DIRECTIONS, Ownership, LevelDefinition, Character, PowerupDefinition, PowerupKind, WorldDefinition } from './types';
 import { audio } from './utils/audio';
 
 export const CHARACTERS: Character[] = [
@@ -10,7 +9,7 @@ export const CHARACTERS: Character[] = [
   { id: 'amber', name: 'Zenith', title: 'The Solar Flare', color: '#f59e0b', secondaryColor: '#b45309', trailColor: '#fbbf24', description: 'Radiating pure photonic energy.' }
 ];
 
-export const LEVELS: LevelDefinition[] = [
+const WORLD_1_LEVELS: LevelDefinition[] = [
   {
     name: "Stardust Outpost",
     size: 4,
@@ -18,14 +17,35 @@ export const LEVELS: LevelDefinition[] = [
     enemyStart: { q: 3, r: 0 },
     rocks: [{ q: 0, r: 0 }, { q: 0, r: 1 }, { q: 0, r: -1 }],
     atmosphere: 'night',
-    platformColors: {
-      base: '#38bdf8',
-      ring: '#fef08a',
-      underside: '#a78bfa',
-    },
+    platformColors: { base: '#38bdf8', ring: '#fef08a', underside: '#a78bfa' },
     enemyCleverness: 10,
     winThreshold: 0.6
   },
+  {
+    name: "Solar Array",
+    size: 4,
+    playerStart: { q: -3, r: 1 },
+    enemyStart: { q: 3, r: -1 },
+    rocks: [{ q: 1, r: -1 }, { q: -1, r: 1 }],
+    atmosphere: 'day',
+    platformColors: { base: '#38bdf8', ring: '#fef08a', underside: '#a78bfa' },
+    enemyCleverness: 20,
+    winThreshold: 0.6
+  },
+  {
+    name: "Command Center",
+    size: 5,
+    playerStart: { q: -4, r: 0 },
+    enemyStart: { q: 4, r: 0 },
+    rocks: [{ q: 0, r: 0 }, { q: 0, r: -2 }, { q: 0, r: 2 }],
+    atmosphere: 'night',
+    platformColors: { base: '#38bdf8', ring: '#fef08a', underside: '#a78bfa' },
+    enemyCleverness: 30,
+    winThreshold: 0.6
+  }
+];
+
+const WORLD_2_LEVELS: LevelDefinition[] = [
   {
     name: "Nebula Gate",
     size: 5,
@@ -33,14 +53,35 @@ export const LEVELS: LevelDefinition[] = [
     enemyStart: { q: 4, r: -2 },
     rocks: [{ q: -1, r: 0 }, { q: 1, r: 0 }, { q: 0, r: 0 }],
     atmosphere: 'sunset',
-    platformColors: {
-      base: '#f472b6',
-      ring: '#fde047',
-      underside: '#fb923c',
-    },
+    platformColors: { base: '#f472b6', ring: '#fde047', underside: '#fb923c' },
     enemyCleverness: 35,
     winThreshold: 0.6
   },
+  {
+    name: "Plasma Clouds",
+    size: 5,
+    playerStart: { q: -3, r: 3 },
+    enemyStart: { q: 3, r: -3 },
+    rocks: [{ q: 2, r: 0 }, { q: -2, r: 0 }],
+    atmosphere: 'sunset',
+    platformColors: { base: '#f472b6', ring: '#fde047', underside: '#fb923c' },
+    enemyCleverness: 45,
+    winThreshold: 0.6
+  },
+  {
+    name: "Void Rift",
+    size: 6,
+    playerStart: { q: -5, r: 2 },
+    enemyStart: { q: 5, r: -2 },
+    rocks: [{ q: 0, r: 0 }, { q: 1, r: -1 }, { q: -1, r: 1 }, { q: 2, r: -2 }, { q: -2, r: 2 }],
+    atmosphere: 'night',
+    platformColors: { base: '#f472b6', ring: '#fde047', underside: '#fb923c' },
+    enemyCleverness: 55,
+    winThreshold: 0.6
+  }
+];
+
+const WORLD_3_LEVELS: LevelDefinition[] = [
   {
     name: "Event Horizon",
     size: 6,
@@ -48,15 +89,60 @@ export const LEVELS: LevelDefinition[] = [
     enemyStart: { q: 5, r: 0 },
     rocks: [{ q: -2, r: 1 }, { q: 2, r: -1 }],
     atmosphere: 'night',
-    platformColors: {
-      base: '#22d3ee',
-      ring: '#facc15',
-      underside: '#f472b6',
-    },
+    platformColors: { base: '#22d3ee', ring: '#facc15', underside: '#f472b6' },
     enemyCleverness: 70,
+    winThreshold: 0.55
+  },
+  {
+    name: "Singularity Edge",
+    size: 6,
+    playerStart: { q: -4, r: 4 },
+    enemyStart: { q: 4, r: -4 },
+    rocks: [{ q: 0, r: 0 }, { q: 3, r: 0 }, { q: -3, r: 0 }],
+    atmosphere: 'night',
+    platformColors: { base: '#22d3ee', ring: '#facc15', underside: '#f472b6' },
+    enemyCleverness: 80,
+    winThreshold: 0.55
+  },
+  {
+    name: "Time Dilator",
+    size: 7,
+    playerStart: { q: -6, r: 3 },
+    enemyStart: { q: 6, r: -3 },
+    rocks: [{ q: 0, r: 0 }, { q: 0, r: 3 }, { q: 0, r: -3 }, { q: 3, r: 0 }, { q: -3, r: 0 }],
+    atmosphere: 'night',
+    platformColors: { base: '#22d3ee', ring: '#facc15', underside: '#f472b6' },
+    enemyCleverness: 90,
     winThreshold: 0.55
   }
 ];
+
+export const WORLDS: WorldDefinition[] = [
+  {
+    id: 'core-systems',
+    name: 'Core Systems',
+    description: 'The heart of the galaxy. Standard gravity and resources.',
+    galaxyPos: { x: 50, y: 50, size: 40, color: '#38bdf8' },
+    levels: WORLD_1_LEVELS
+  },
+  {
+    id: 'nebula-expanse',
+    name: 'Nebula Expanse',
+    description: 'A colorful but dangerous region filled with gas giants.',
+    galaxyPos: { x: 20, y: 30, size: 30, color: '#f472b6' },
+    levels: WORLD_2_LEVELS
+  },
+  {
+    id: 'event-horizon',
+    name: 'Event Horizon',
+    description: 'The edge of known space. Physics breaks down here.',
+    galaxyPos: { x: 80, y: 70, size: 35, color: '#22d3ee' },
+    levels: WORLD_3_LEVELS
+  }
+];
+
+// Flat list for backward compatibility or simple access
+export const LEVELS: LevelDefinition[] = WORLDS.flatMap(w => w.levels);
 
 export const POWERUPS: PowerupDefinition[] = [
   { id: 'surge', name: 'Pulse Surge', kind: 'positive', description: 'Claim adjacent neutral tiles.' },
@@ -64,6 +150,7 @@ export const POWERUPS: PowerupDefinition[] = [
   { id: 'aegis', name: 'Aegis', kind: 'positive', description: 'Your next attack succeeds.' },
   { id: 'stasis', name: 'Stasis', kind: 'negative', description: 'Skip your next turn.' },
   { id: 'emp', name: 'EMP Burst', kind: 'negative', description: 'Lose up to two tiles.' },
+  { id: 'corrupt', name: 'Corrupt Signal', kind: 'negative', description: 'An adjacent tile flips.' },
   { id: 'corrupt', name: 'Corrupt Signal', kind: 'negative', description: 'An adjacent tile flips.' },
 ];
 
@@ -81,6 +168,7 @@ interface GameStore {
   enemyPos: HexCoord;
   prevEnemyPos: HexCoord;
   levelIndex: number;
+  selectedWorldId: string;
   selectedCharacterId: string;
   isLevelMenuOpen: boolean;
   atmosphere: 'day' | 'sunset' | 'night';
@@ -94,6 +182,7 @@ interface GameStore {
   
   setAppFlow: (flow: AppFlow) => void;
   setSelectedCharacterId: (id: string) => void;
+  setSelectedWorldId: (id: string) => void;
   initLevel: (idx?: number) => void;
   movePlayer: (coord: HexCoord) => void;
   moveEnemy: () => void;
@@ -324,6 +413,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   enemyPos: { q: 0, r: 0 },
   prevEnemyPos: { q: 0, r: 0 },
   levelIndex: 0,
+  selectedWorldId: 'core-systems',
   selectedCharacterId: 'emerald',
   isLevelMenuOpen: false,
   atmosphere: 'day',
@@ -343,12 +433,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   
   setSelectedCharacterId: (id) => set({ selectedCharacterId: id }),
+  setSelectedWorldId: (id) => set({ selectedWorldId: id }),
   toggleLevelMenu: () => set(s => ({ isLevelMenuOpen: !s.isLevelMenuOpen })),
   setCinematic: (val) => set({ isCinematic: val }),
 
   initLevel: (idx = 0) => {
-    const safeIdx = idx % LEVELS.length;
-    const level = LEVELS[safeIdx];
+    const { selectedWorldId } = get();
+    const world = WORLDS.find(w => w.id === selectedWorldId) || WORLDS[0];
+    const safeIdx = idx % world.levels.length;
+    const level = world.levels[safeIdx];
     const newGrid: Record<string, CellData> = {};
     const size = level.size;
 
@@ -392,9 +485,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   movePlayer: (target) => {
-    const { gameState, playerPos, grid, levelIndex, isCinematic, playerShield, skipEnemyTurn } = get();
+    const { gameState, playerPos, grid, levelIndex, isCinematic, playerShield, skipEnemyTurn, selectedWorldId } = get();
     if (gameState !== GameState.PLAYER_TURN || isCinematic) return;
-    const level = LEVELS[levelIndex];
+    
+    const world = WORLDS.find(w => w.id === selectedWorldId) || WORLDS[0];
+    const level = world.levels[levelIndex];
+    
     let nextPlayerShield = playerShield;
 
     const neighbors = getNeighbors(playerPos);
@@ -422,7 +518,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const newGrid = { ...grid };
     newGrid[key] = { ...cell, owner: Ownership.PLAYER, powerupId: undefined };
     const pickupResult = applyPowerup(cell.powerupId, Ownership.PLAYER, target, newGrid, level);
-    const filledGrid = performRegionCapture(pickupResult.grid, Ownership.PLAYER, LEVELS[levelIndex].size);
+    const filledGrid = performRegionCapture(pickupResult.grid, Ownership.PLAYER, level.size);
     
     audio.playMove();
     set({
@@ -458,10 +554,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   moveEnemy: () => {
-    const { gameState, enemyPos, grid, levelIndex, playerPos, enemyShield, skipPlayerTurn } = get();
+    const { gameState, enemyPos, grid, levelIndex, playerPos, enemyShield, skipPlayerTurn, selectedWorldId } = get();
     if (gameState !== GameState.ENEMY_TURN) return;
 
-    const level = LEVELS[levelIndex];
+    const world = WORLDS.find(w => w.id === selectedWorldId) || WORLDS[0];
+    const level = world.levels[levelIndex];
+    
     let nextEnemyShield = enemyShield;
     const neighbors = getNeighbors(enemyPos).filter(n => {
       const cell = grid[getCoordKey(n.q, n.r)];

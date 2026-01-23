@@ -5,6 +5,7 @@ import UIOverlay from './components/UIOverlay';
 import SplashScreen from './components/SplashScreen';
 import LandingPage from './components/LandingPage';
 import CharacterSelect from './components/CharacterSelect';
+import WorldSelect from './components/WorldSelect';
 import { useGameStore } from './store';
 import { AppFlow } from './types';
 
@@ -24,6 +25,7 @@ const App: React.FC = () => {
       {appFlow === AppFlow.SPLASH && <SplashScreen />}
       {appFlow === AppFlow.LANDING && <LandingPage />}
       {appFlow === AppFlow.CHARACTER_SELECT && <CharacterSelect />}
+      {appFlow === AppFlow.WORLD_SELECT && <WorldSelect />}
       {appFlow === AppFlow.GAME && <UIOverlay />}
       
       {/* Mobile Orientation Hint (CSS Only) */}
